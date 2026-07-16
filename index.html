@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="si">
+<head>
+    <meta charset="UTF-8">
+    <title>Private Chat</title>
+    <style>
+        body { font-family: sans-serif; background-color: #ece5dd; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        #login-screen, #chat-screen { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
+        #chat-screen { display: none; height: 400px; display: flex; flex-direction: column; }
+        .header { background: #075e54; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+        #chat-box { flex-grow: 1; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 10px; padding: 5px; text-align: left; }
+        input { padding: 8px; width: 80%; margin-bottom: 5px; }
+        button { background: #25d366; color: white; border: none; padding: 8px 15px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="login-screen">
+    <h3>ආරක්ෂිත පිවිසුම</h3>
+    <input type="password" id="pass" placeholder="මුරපදය">
+    <br>
+    <button onclick="checkPassword()">ඇතුළු වන්න</button>
+</div>
+
+<div id="chat-screen">
+    <div class="header">Chat Room</div>
+    <div id="chat-box"></div>
+    <input type="text" id="msg" placeholder="පණිවිඩයක් ලියන්න...">
+    <button onclick="sendMsg()">යවන්න</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyC6u8IliNShA0nZT_uj0kTZLzzUMzfYM1g",
+        authDomain: "mali-bb29a.firebaseapp.com",
+        databaseURL: "https://mali-bb29a-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "mali-bb29a",
+        storageBucket: "mali-bb29a.firebasestorage.app",
+        messagingSenderId: "362083472234",
+        appId: "1:362083472234:web:74d5696f4b2a6087c74b13"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Global scope functions for the UI
+    window.checkPassword = function() {
+        if(document.getElementById("pass").value === "2010") {
+            document.getElementById("login-screen").style.display = "none";
+            document.getElementById("chat-screen").style.display = "flex";
+        } else {
+            alert("මෝඩයා");
+        }
+    };
+
+    window.sendMsg = function() {
+        const text = document.getElementById("msg").value;
+        if(text !== "") {
+            push(ref(db, 'messages/'), { text: text });
+            document.getElementById("msg").value = "";
+        }
+    };
+
+    onValue(ref(db, 'messages/'), (snapshot) => {
+        const chatBox = document.getElementById("chat-box");
+        chatBox.innerHTML = "";
+        snapshot.forEach((child) => {
+            chatBox.innerHTML += `<div>${child.val().text}</div>`;
+        });
+    });
+</script>
+
+</body>
+</html>
