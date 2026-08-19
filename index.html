@@ -2,76 +2,116 @@
 <html lang="si">
 <head>
     <meta charset="UTF-8">
-    <title>Private Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Exchange - Buy Crypto</title>
     <style>
-        body { font-family: sans-serif; background-color: #ece5dd; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        #login-screen, #chat-screen { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; width: 300px; }
-        #chat-screen { display: none; height: 400px; display: flex; flex-direction: column; }
-        .header { background: #075e54; color: white; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
-        #chat-box { flex-grow: 1; overflow-y: auto; border: 1px solid #ddd; margin-bottom: 10px; padding: 5px; text-align: left; }
-        input { padding: 8px; width: 80%; margin-bottom: 5px; }
-        button { background: #25d366; color: white; border: none; padding: 8px 15px; cursor: pointer; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: #1e293b;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 450px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #38bdf8;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            background-color: #0f172a;
+            color: #fff;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #2563eb;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .note {
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
 
-<div id="login-screen">
-    <h3>ආරක්ෂිත පිවිසුම</h3>
-    <input type="password" id="pass" placeholder="මුරපදය">
-    <br>
-    <button onclick="checkPassword()">ඇතුළු වන්න</button>
-</div>
+    <div class="container">
+        <h2>Crypto Buy / Sell Portal</h2>
+        <form action="process-payment.php" method="POST">
+            
+            <div class="form-group">
+                <label for="crypto-type">Select Cryptocurrency</label>
+                <select id="crypto-type" name="crypto_type">
+                    <option value="usdt">USDT (Tether)</option>
+                    <option value="btc">BTC (Bitcoin)</option>
+                    <option value="eth">ETH (Ethereum)</option>
+                </select>
+            </div>
 
-<div id="chat-screen">
-    <div class="header">Chat Room</div>
-    <div id="chat-box"></div>
-    <input type="text" id="msg" placeholder="පණිවිඩයක් ලියන්න...">
-    <button onclick="sendMsg()">යවන්න</button>
-</div>
+            <div class="form-group">
+                <label for="amount">Amount you want to buy (USD / LKR)</label>
+                <input type="number" id="amount" name="amount" placeholder="Enter amount" required>
+            </div>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+            <div class="form-group">
+                <label for="wallet">Your Crypto Wallet Address</label>
+                <input type="text" id="wallet" name="wallet_address" placeholder="Paste your wallet address here" required>
+            </div>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyC6u8IliNShA0nZT_uj0kTZLzzUMzfYM1g",
-        authDomain: "mali-bb29a.firebaseapp.com",
-        databaseURL: "https://mali-bb29a-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "mali-bb29a",
-        storageBucket: "mali-bb29a.firebasestorage.app",
-        messagingSenderId: "362083472234",
-        appId: "1:362083472234:web:74d5696f4b2a6087c74b13"
-    };
+            <div class="form-group">
+                <label for="bank-slip">Upload Bank Deposit Slip (Payment Proof)</label>
+                <input type="file" id="bank-slip" name="bank_slip" accept="image/*" required>
+            </div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Global scope functions for the UI
-    window.checkPassword = function() {
-        if(document.getElementById("pass").value === "2010") {
-            document.getElementById("login-screen").style.display = "none";
-            document.getElementById("chat-screen").style.display = "flex";
-        } else {
-            alert("මෝඩයා");
-        }
-    };
-
-    window.sendMsg = function() {
-        const text = document.getElementById("msg").value;
-        if(text !== "") {
-            push(ref(db, 'messages/'), { text: text });
-            document.getElementById("msg").value = "";
-        }
-    };
-
-    onValue(ref(db, 'messages/'), (snapshot) => {
-        const chatBox = document.getElementById("chat-box");
-        chatBox.innerHTML = "";
-        snapshot.forEach((child) => {
-            chatBox.innerHTML += `<div>${child.val().text}</div>`;
-        });
-    });
-</script>
+            <button type="submit">Complete Order</button>
+        </form>
+        
+        <div class="note">
+            * Money must be transferred to our bank account. Once verified, crypto will be sent to your wallet.
+        </div>
+    </div>
 
 </body>
 </html>
+
